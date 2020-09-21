@@ -1,0 +1,26 @@
+{
+    "name": "private-packagist/composer-split",
+    "description": "Private Packagist Composer Split",
+    "keywords": ["private packagist", "composer", "split", "artifact"],
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Packagist Conductors UG (haftungsbeschränkt)",
+            "email": "contact@packagist.com"
+        }
+    ],
+    "require": {
+        "php": "^7.0",
+        "private-packagist/api-client": "^1.21",
+        "php-http/guzzle6-adapter": "^2.0",
+        "knplabs/github-api": "^1.1",
+        "vlucas/phpdotenv": "^5.2"
+    },
+    "autoload": {
+        "psr-4": {"PrivatePackagist\\ComposerSplit\\": "src/"}
+    },
+    "config": {
+        "bin-dir": "bin"
+    }
+}
