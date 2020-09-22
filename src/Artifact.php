@@ -1,18 +1,15 @@
-<?php
+<?php declare(strict_types=1);
 namespace PrivatePackagist\ComposerSplit;
 
 use PrivatePackagist\ApiClient\Exception\ResourceNotFoundException;
+use PrivatePackagist\ApiClient\Client;
 
 class Artifact
 {
-    /** @var \PrivatePackagist\ApiClient\Client */
+    /** @var Client */
     private $client;
 
-    /**
-     * Artifact constructor.
-     * @param $client
-     */
-    public function __construct($client)
+    public function __construct(Client $client)
     {
         $this->client = $client;
     }
@@ -22,10 +19,7 @@ class Artifact
         $file = file_get_contents($fileName);
         $fileName = pathinfo($fileName, PATHINFO_FILENAME);
 
-        echo "Creating artifact for ".$fileName. ". \n";
         $result = $this->client->packages()->artifacts()->create($file, 'application/zip', $fileName);
-        echo "Artifact created for ".$fileName. ". \n";
-
         return $result['id'];
     }
 

@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 namespace PrivatePackagist\ComposerSplit;
 
 class Zip
@@ -12,13 +12,17 @@ class Zip
                 continue;
             }
 
+            if (!file_exists($file->getPathname().'/composer.json')) {
+                continue;
+            }
+
             $zip = new \ZipArchive();
             $zipComposer = json_decode(file_get_contents($file->getPathname().'/composer.json'), true);
             $zipFileName = sys_get_temp_dir().'/'.$file->getFilename().'-'.$zipComposer['version'].'.zip';
             $zip->open($zipFileName,\ZipArchive::CREATE | \ZipArchive::OVERWRITE);
 
             $rootPath = $file->getPathname();
-            /** @var SplFileInfo[] $files */
+            /** @var \SplFileInfo[] $files */
             $files = new \RecursiveIteratorIterator(
                 new \RecursiveDirectoryIterator($rootPath),
                 \RecursiveIteratorIterator::LEAVES_ONLY
@@ -31,6 +35,7 @@ class Zip
                     $zip->addFile($filePath, $relativePath);
                 }
             }
+
             $zip->close();
 
             $zipFiles[$zipComposer['name']] = $zipFileName;

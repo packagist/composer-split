@@ -1,0 +1,8 @@
+{
+    "name": "acme/artifact",
+    "version": "0.0.2",
+    "description": "Some package",
+    "type": "library",
+    "minimum-stability": "dev",
+    "require": {}
+}

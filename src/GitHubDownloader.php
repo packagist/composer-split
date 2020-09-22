@@ -1,38 +1,46 @@
-<?php
+<?php declare(strict_types=1);
 namespace PrivatePackagist\ComposerSplit;
+
+use Github\Api\GitData;
+use Github\Api\Repo;
 
 class GitHubDownloader
 {
-    /**
-     * @var \Github\Client
-     */
+    /** @var \Github\Client */
     private $client;
+    /** @var string */
+    private $username;
+    /** @var string */
+    private $token;
 
-    /**
-     * GitHubDownloader constructor.
-     * @param \Github\Client $client
-     */
-    public function __construct(\Github\Client $client)
+    public function __construct(\Github\Client $client, string $username, string $token)
     {
         $this->client = $client;
+        $this->username = $username;
+        $this->token = $token;
     }
 
-    public function authenticate(string $username, string $token)
+    public function authenticate(): void
     {
-        $this->client->authenticate($username, $token, \Github\Client::AUTH_HTTP_PASSWORD);
+        $this->client->authenticate($this->username, $this->token, \Github\Client::AUTH_HTTP_PASSWORD);
     }
 
-    public function getAllRefs(string $username, string $repo): array
+    public function getAllRefs(string $repo): array
     {
-        $branches = $this->client->api('gitData')->references()->branches($username, $repo);
-        $tags = $this->client->api('gitData')->references()->tags($username, $repo);
-
+        /** @var GitData $gitData */
+        $gitData = $this->client->api('gitData');
+        /** @var GitData\References $references */
+        $references = $gitData->references();
+        $branches = $references->branches($this->username, $repo);
+        $tags = $references->tags($this->username, $repo);
         return array_merge(array_column($branches, 'ref'), array_column($tags, 'ref'));
     }
 
-    public function downloadRepositoryContents(string $username, string $repo, string $reference, string $downloadPath)
+    public function downloadRepositoryContents(string $repo, string $reference, string $downloadPath): void
     {
-        $resource = $this->client->api('gitData')->trees()->show($username, $repo, $reference, true);
+        /** @var GitData $gitData */
+        $gitData = $this->client->api('gitData');
+        $resource = $gitData->trees()->show($this->username, $repo, $reference, true);
         $files = array_map(function (array $entry) {
             return [
                 'name' => basename($entry['path']),
@@ -65,7 +73,7 @@ class GitHubDownloader
         foreach ($downloads as $dirName => $dirFiles) {
             foreach ($dirFiles as $file) {
 
-                $fileInfo = $this->client->api('repo')->contents()->show($username, $repo, $file['path'], $reference);
+                $fileInfo = $this->client->api('repo')->contents()->show($this->username, $repo, $file['path'], $reference);
                 $fileDir = pathinfo($downloadPath.'/'.$file['path'], PATHINFO_DIRNAME);
                 if (!file_exists($fileDir)) {
                     if (!mkdir($fileDir) && !is_dir($fileDir)) {
@@ -73,11 +81,13 @@ class GitHubDownloader
                     }
                 }
 
-                file_put_contents($downloadPath.'/'.$file['path'], base64_decode($fileInfo['content']));
+                if ($fileInfo['content']) {
+                    file_put_contents($downloadPath.'/'.$file['path'], base64_decode($fileInfo['content'], true));
+                }
             }
         }
 
-        // add version entry to composer.json
+        // add a version entry to composer.json
         foreach ($downloads as $dirName => $dirFiles) {
             $composerJsonPath = $downloadPath.'/'.$dirName.'/composer.json';
             if (file_exists($composerJsonPath)) {
