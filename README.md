@@ -18,7 +18,8 @@ Then edit `.env` with your Private Packagist API credentials and GitHub paramete
 The GitHub repo configured in `.env` needs to have a composer.json in each subdirecotry in order to publish that as a package in Private Packagist.
 ## Basic usage
 
-Host this repo somewhere and add `bin/composer-split.php` in a GitHub webhook. This will update your packages in Private Packagist each time you push a change to GitHub.
+Host this repo somewhere and add `web/composer-split.php` in a GitHub webhook. This will update your packages in Private Packagist each time you push a change to GitHub.
+In case the webhook time out if you have multiple versions or subdirectories, you can run `bin/composer-split.php` as part of your CI/CD build or with GitHub actions.
 
 ## License
 
